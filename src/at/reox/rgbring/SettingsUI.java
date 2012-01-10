@@ -32,8 +32,6 @@ public class SettingsUI extends JFrame implements ChangeListener {
 
     private int counter = 0;
 
-    private boolean needUpdate = true;
-
     private Color[] clickableColors = { Color.red, Color.blue, Color.green,
 	new Color(100, 100, 100), new Color(200, 200, 200), Color.cyan, Color.magenta,
 	Color.yellow, Color.black };
@@ -166,31 +164,26 @@ public class SettingsUI extends JFrame implements ChangeListener {
     }
 
     private void updateRGB() {
-	if (needUpdate) {
-	    redl.setText("0x" + Integer.toHexString(red.getValue()));
-	    greenl.setText("0x" + Integer.toHexString(green.getValue()));
-	    bluel.setText("0x" + Integer.toHexString(blue.getValue()));
+	redl.setText("0x" + Integer.toHexString(red.getValue()));
+	greenl.setText("0x" + Integer.toHexString(green.getValue()));
+	bluel.setText("0x" + Integer.toHexString(blue.getValue()));
 
-	    int r = red.getValue();
-	    int g = green.getValue();
-	    int b = blue.getValue();
+	int r = red.getValue();
+	int g = green.getValue();
+	int b = blue.getValue();
 
-	    color.setBackground(new Color(r / 256, g / 256, b / 256));
+	color.setBackground(new Color(r / 256, g / 256, b / 256));
 
-	    // Send it to the device
-	    if (rgb.isDeviceAvailable()) {
-		rgb.sendRGBData(red.getValue(), green.getValue(), blue.getValue());
-	    }
-	    needUpdate = true;
+	// Send it to the device
+	if (rgb.isDeviceAvailable()) {
+	    rgb.sendRGBData(red.getValue(), green.getValue(), blue.getValue());
 	}
     }
 
     private void updateRGB(Color c) {
-	needUpdate = false;
 	red.setValue(c.getRed() * 257);
 	green.setValue(c.getGreen() * 257);
 	blue.setValue(c.getBlue() * 257);
-	needUpdate = true;
 
 	updateRGB();
     }
@@ -214,8 +207,6 @@ public class SettingsUI extends JFrame implements ChangeListener {
     @Override
     public void stateChanged(ChangeEvent e) {
 	if (snapmode) {
-
-	    // TODO filter action so the request of the color isnt that often...
 	    String name = ((JComponent) e.getSource()).getName();
 
 	    if (name.equals("r")) {
