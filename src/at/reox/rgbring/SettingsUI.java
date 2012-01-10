@@ -1,8 +1,11 @@
 package at.reox.rgbring;
 
 import java.awt.Color;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
@@ -30,6 +33,10 @@ public class SettingsUI extends JFrame implements ChangeListener {
 
     private int counter = 0;
 
+    private Color[] clickableColors = { Color.red, Color.blue, Color.green,
+	new Color(100, 100, 100), new Color(200, 200, 200), Color.cyan, Color.magenta,
+	Color.yellow, Color.black };
+
     private boolean snapmode = false;
 
     public SettingsUI() {
@@ -44,6 +51,37 @@ public class SettingsUI extends JFrame implements ChangeListener {
 	redl = new JLabel(startcolor + "");
 	greenl = new JLabel(startcolor + "");
 	bluel = new JLabel(startcolor + "");
+
+	JPanel clickColors = new JPanel(new FlowLayout());
+	for (final Color c : clickableColors) {
+	    JPanel tcolor = new JPanel();
+	    tcolor.setBackground(c);
+	    tcolor.addMouseListener(new MouseListener() {
+		@Override
+		public void mouseClicked(MouseEvent arg0) {
+		    updateRGB(c);
+		}
+
+		@Override
+		public void mouseEntered(MouseEvent arg0) {
+		}
+
+		@Override
+		public void mouseExited(MouseEvent arg0) {
+		}
+
+		@Override
+		public void mousePressed(MouseEvent arg0) {
+		}
+
+		@Override
+		public void mouseReleased(MouseEvent arg0) {
+		}
+	    });
+	    clickColors.add(tcolor);
+	}
+
+	panel.add(clickColors, "span, wrap, h 50!");
 
 	redl.setText("0x" + Integer.toHexString(startcolor));
 	greenl.setText("0x" + Integer.toHexString(startcolor));
@@ -138,6 +176,14 @@ public class SettingsUI extends JFrame implements ChangeListener {
 	if (rgb.isDeviceAvailable()) {
 	    rgb.sendRGBData(red.getValue(), green.getValue(), blue.getValue());
 	}
+    }
+
+    private void updateRGB(Color c) {
+	red.setValue(c.getRed() * 256);
+	green.setValue(c.getGreen() * 256);
+	blue.setValue(c.getBlue() * 256);
+
+	updateRGB();
     }
 
     private void updateDevice() {
