@@ -7,5 +7,6 @@ public class Main {
 	RGBServiceImpl rgb = new RGBServiceImpl();
 	sui.setRGBService(rgb);
 	sui.startUi();
+	sui.setResizable(false);
     }
 }

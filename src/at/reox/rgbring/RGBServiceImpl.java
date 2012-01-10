@@ -23,6 +23,7 @@ public class RGBServiceImpl implements RGBService {
 	short idVendor = 0x16c0;
 	short idProduct = 0x05dc;
 
+	USB.init();
 	this.dev = USB.getDevice(idVendor, idProduct);
     }
 
@@ -44,6 +45,8 @@ public class RGBServiceImpl implements RGBService {
 	openDevice();
 	return dev.isOpen();
     }
+
+    private int lr = 0, lg = 0, lb = 0;
 
     private byte[] convertRGBData(int red, int green, int blue) {
 	// Hack arround here to get the Low and High bytes
@@ -99,6 +102,14 @@ public class RGBServiceImpl implements RGBService {
 
     @Override
     public void sendRGBData(int red, int green, int blue) {
+	// If we had the request allready...
+	if (lr == red && lg == green && lb == blue) {
+	    return;
+	}
+	lr = red;
+	lg = green;
+	lb = blue;
+
 	byte[] rgb = convertRGBData(red, green, blue);
 	try {
 	    // 0x40 = VENDOR | ENDPOINT_OUT | RECIP_DEVICE
@@ -113,7 +124,7 @@ public class RGBServiceImpl implements RGBService {
 	    e.printStackTrace();
 
 	} catch (USBException e) {
-	    // FIXME device hungup?
+	    initDevice();
 	    e.printStackTrace();
 	}
     }

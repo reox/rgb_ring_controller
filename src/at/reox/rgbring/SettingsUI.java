@@ -1,7 +1,6 @@
 package at.reox.rgbring;
 
 import java.awt.Color;
-import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -33,6 +32,8 @@ public class SettingsUI extends JFrame implements ChangeListener {
 
     private int counter = 0;
 
+    private boolean needUpdate = true;
+
     private Color[] clickableColors = { Color.red, Color.blue, Color.green,
 	new Color(100, 100, 100), new Color(200, 200, 200), Color.cyan, Color.magenta,
 	Color.yellow, Color.black };
@@ -52,13 +53,17 @@ public class SettingsUI extends JFrame implements ChangeListener {
 	greenl = new JLabel(startcolor + "");
 	bluel = new JLabel(startcolor + "");
 
-	JPanel clickColors = new JPanel(new FlowLayout());
+	final JCheckBox snap = new JCheckBox("Snap Sliders");
+
+	JPanel clickColors = new JPanel(new MigLayout());
 	for (final Color c : clickableColors) {
 	    JPanel tcolor = new JPanel();
 	    tcolor.setBackground(c);
 	    tcolor.addMouseListener(new MouseListener() {
 		@Override
 		public void mouseClicked(MouseEvent arg0) {
+		    snap.setSelected(false);
+		    snapmode = false;
 		    updateRGB(c);
 		}
 
@@ -78,10 +83,10 @@ public class SettingsUI extends JFrame implements ChangeListener {
 		public void mouseReleased(MouseEvent arg0) {
 		}
 	    });
-	    clickColors.add(tcolor);
+	    clickColors.add(tcolor, "h 30!, w 30!");
 	}
 
-	panel.add(clickColors, "span, wrap, h 50!");
+	panel.add(clickColors, "span, wrap");
 
 	redl.setText("0x" + Integer.toHexString(startcolor));
 	greenl.setText("0x" + Integer.toHexString(startcolor));
@@ -115,7 +120,6 @@ public class SettingsUI extends JFrame implements ChangeListener {
 	panel.add(bluel, "w 50!");
 	panel.add(blue, "wrap");
 
-	final JCheckBox snap = new JCheckBox("Snap Sliders");
 	snap.addActionListener(new ActionListener() {
 
 	    @Override
@@ -162,26 +166,31 @@ public class SettingsUI extends JFrame implements ChangeListener {
     }
 
     private void updateRGB() {
-	redl.setText("0x" + Integer.toHexString(red.getValue()));
-	greenl.setText("0x" + Integer.toHexString(green.getValue()));
-	bluel.setText("0x" + Integer.toHexString(blue.getValue()));
+	if (needUpdate) {
+	    redl.setText("0x" + Integer.toHexString(red.getValue()));
+	    greenl.setText("0x" + Integer.toHexString(green.getValue()));
+	    bluel.setText("0x" + Integer.toHexString(blue.getValue()));
 
-	int r = red.getValue();
-	int g = green.getValue();
-	int b = blue.getValue();
+	    int r = red.getValue();
+	    int g = green.getValue();
+	    int b = blue.getValue();
 
-	color.setBackground(new Color(r / 256, g / 256, b / 256));
+	    color.setBackground(new Color(r / 256, g / 256, b / 256));
 
-	// Send it to the device
-	if (rgb.isDeviceAvailable()) {
-	    rgb.sendRGBData(red.getValue(), green.getValue(), blue.getValue());
+	    // Send it to the device
+	    if (rgb.isDeviceAvailable()) {
+		rgb.sendRGBData(red.getValue(), green.getValue(), blue.getValue());
+	    }
+	    needUpdate = true;
 	}
     }
 
     private void updateRGB(Color c) {
-	red.setValue(c.getRed() * 256);
-	green.setValue(c.getGreen() * 256);
-	blue.setValue(c.getBlue() * 256);
+	needUpdate = false;
+	red.setValue(c.getRed() * 257);
+	green.setValue(c.getGreen() * 257);
+	blue.setValue(c.getBlue() * 257);
+	needUpdate = true;
 
 	updateRGB();
     }
@@ -205,6 +214,8 @@ public class SettingsUI extends JFrame implements ChangeListener {
     @Override
     public void stateChanged(ChangeEvent e) {
 	if (snapmode) {
+
+	    // TODO filter action so the request of the color isnt that often...
 	    String name = ((JComponent) e.getSource()).getName();
 
 	    if (name.equals("r")) {
