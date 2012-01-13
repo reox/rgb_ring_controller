@@ -8,7 +8,6 @@ import java.awt.event.MouseListener;
 
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
@@ -17,35 +16,28 @@ import javax.swing.event.ChangeListener;
 
 import net.miginfocom.swing.MigLayout;
 
-public class SettingsUI extends JFrame implements ChangeListener {
-
-    private static final long serialVersionUID = -8313330695481436336L;
+public class SettingsUI implements ChangeListener {
 
     private JPanel panel;
     private JSlider red, green, blue;
     private JLabel redl, greenl, bluel;
-    private JLabel device;
 
-    private RGBService rgb;
+    private LEDService rgb;
 
     private JPanel color;
 
-    private int counter = 0;
-
-    private Color[] clickableColors = { Color.red, Color.blue, Color.green,
-	new Color(100, 100, 100), new Color(200, 200, 200), Color.cyan, Color.magenta,
-	Color.yellow, Color.black };
+    private Color[] clickableColors = { new Color(100, 100, 100), new Color(200, 200, 200),
+	Color.black, Color.red, Color.blue, Color.green, Color.cyan, Color.magenta, Color.yellow };
 
     private boolean snapmode = false;
 
     public SettingsUI() {
 	panel = new JPanel(new MigLayout());
-	this.setContentPane(panel);
 
-	int maxvalue = 65535;
+	int maxvalue = 4095;
 	int minvalue = 0;
 
-	final int startcolor = 0x0100;
+	final int startcolor = 0x100;
 
 	redl = new JLabel(startcolor + "");
 	greenl = new JLabel(startcolor + "");
@@ -84,7 +76,7 @@ public class SettingsUI extends JFrame implements ChangeListener {
 	    clickColors.add(tcolor, "h 30!, w 30!");
 	}
 
-	panel.add(clickColors, "span, wrap");
+	// panel.add(clickColors, "span, wrap");
 
 	redl.setText("0x" + Integer.toHexString(startcolor));
 	greenl.setText("0x" + Integer.toHexString(startcolor));
@@ -103,8 +95,8 @@ public class SettingsUI extends JFrame implements ChangeListener {
 	blue.addChangeListener(this);
 
 	color = new JPanel();
-	panel.add(color, "span 1 3, grow, h 50!, w 50!");
-	color.setBackground(new Color(startcolor / 256, startcolor / 256, startcolor / 256));
+	panel.add(color, "span 1 3, grow, h 30!, w 30!");
+	color.setBackground(new Color(startcolor >> 4, startcolor >> 4, startcolor >> 4));
 
 	panel.add(new JLabel("Rot"));
 	panel.add(redl, "w 50!");
@@ -130,36 +122,10 @@ public class SettingsUI extends JFrame implements ChangeListener {
 
 	});
 
-	panel.add(snap, "span, wrap");
-
-	device = new JLabel("-");
-	panel.add(device, "span, wrap");
-
-	this.pack();
-	this.setVisible(true);
-	this.setTitle("RGB-Ring GUI");
-	this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	panel.add(snap, "span");
     }
 
-    public void startUi() {
-	Thread devLookup = new Thread(new Runnable() {
-	    @Override
-	    public void run() {
-		while (true) {
-		    try {
-			System.out.println("Checking for Device");
-			updateDevice();
-			Thread.sleep(1000);
-		    } catch (InterruptedException e) {
-			// Ignore
-		    }
-		}
-	    }
-	});
-	devLookup.start();
-    }
-
-    public void setRGBService(RGBService rgb) {
+    public void setLEDService(LEDService rgb) {
 	this.rgb = rgb;
     }
 
@@ -172,36 +138,18 @@ public class SettingsUI extends JFrame implements ChangeListener {
 	int g = green.getValue();
 	int b = blue.getValue();
 
-	color.setBackground(new Color(r / 256, g / 256, b / 256));
+	// The Color in Java is 8 Bit...
+	color.setBackground(new Color((r >> 4) % 255, (g >> 4) % 255, (b >> 4) % 255));
 
-	// Send it to the device
-	if (rgb.isDeviceAvailable()) {
-	    rgb.sendRGBData(red.getValue(), green.getValue(), blue.getValue());
-	}
+	rgb.sendRGB(red.getValue(), green.getValue(), blue.getValue());
     }
 
     private void updateRGB(Color c) {
-	red.setValue(c.getRed() * 257);
-	green.setValue(c.getGreen() * 257);
-	blue.setValue(c.getBlue() * 257);
+	red.setValue(c.getRed() << 4);
+	green.setValue(c.getGreen() << 4);
+	blue.setValue(c.getBlue() << 4);
 
 	updateRGB();
-    }
-
-    private void updateDevice() {
-	if (rgb.isDeviceAvailable()) {
-	    device.setText("Device Available");
-	} else {
-	    String dot = "";
-	    counter++;
-	    for (int i = 0; i < counter % 4; i++) {
-		dot += ". ";
-	    }
-	    device.setText("Device Unavailable " + dot);
-	}
-	this.repaint();
-	this.validate();
-	this.pack();
     }
 
     @Override
@@ -224,4 +172,7 @@ public class SettingsUI extends JFrame implements ChangeListener {
 	updateRGB();
     }
 
+    public JComponent getUI() {
+	return panel;
+    }
 }

@@ -13,6 +13,11 @@ public class RGBServiceImpl implements RGBService {
 
     Device dev;
 
+    short idVendor = 0x16c0;
+    short idProduct = 0x05dc;
+    int bConfigurationValue = 1;
+    int bInterfaceNumber = 0;
+
     public RGBServiceImpl() {
 	// get a device instance with vendor id and product id
 	initDevice();
@@ -20,16 +25,18 @@ public class RGBServiceImpl implements RGBService {
     }
 
     private void initDevice() {
-	short idVendor = 0x16c0;
-	short idProduct = 0x05dc;
-
+	System.out.println("Init");
 	USB.init();
 	this.dev = USB.getDevice(idVendor, idProduct);
+	try {
+	    dev.open(bConfigurationValue, bInterfaceNumber, -1);
+	} catch (USBException e) {
+	    // TODO Auto-generated catch block
+	    e.printStackTrace();
+	}
     }
 
     private void openDevice() {
-	int bConfigurationValue = 1;
-	int bInterfaceNumber = 0;
 
 	try {
 	    if (!dev.isOpen()) {
@@ -100,6 +107,9 @@ public class RGBServiceImpl implements RGBService {
 	return data;
     }
 
+    /**
+     * At this point we have 12 Bit Values
+     */
     @Override
     public void sendRGBData(int red, int green, int blue) {
 	// If we had the request allready...
@@ -109,6 +119,11 @@ public class RGBServiceImpl implements RGBService {
 	lr = red;
 	lg = green;
 	lb = blue;
+
+	// Now we need 16 Bit Values, so shift the values up
+	red = red << 4;
+	green = green << 4;
+	blue = blue << 4;
 
 	byte[] rgb = convertRGBData(red, green, blue);
 	try {
@@ -125,13 +140,8 @@ public class RGBServiceImpl implements RGBService {
 
 	} catch (USBException e) {
 	    initDevice();
-	    e.printStackTrace();
+	    System.err.println(e.getMessage());
 	}
-    }
-
-    @Override
-    public int ledCount() {
-	return 16;
     }
 
     private String pad(String in, int maxlength) {
