@@ -19,6 +19,7 @@ import net.miginfocom.swing.MigLayout;
 public class SettingsUI implements ChangeListener {
 
     private JPanel panel;
+    private JPanel preview;
     private JSlider red, green, blue;
     private JLabel redl, greenl, bluel;
 
@@ -33,6 +34,7 @@ public class SettingsUI implements ChangeListener {
 
     public SettingsUI() {
 	panel = new JPanel(new MigLayout());
+	preview = new JPanel(new MigLayout());
 
 	int maxvalue = 4095;
 	int minvalue = 0;
@@ -96,6 +98,7 @@ public class SettingsUI implements ChangeListener {
 
 	color = new JPanel();
 	panel.add(color, "span 1 3, grow, h 30!, w 30!");
+	preview.add(color, "grow, h 30!, w 30!");
 	color.setBackground(new Color(startcolor >> 4, startcolor >> 4, startcolor >> 4));
 
 	panel.add(new JLabel("Rot"));
@@ -174,5 +177,13 @@ public class SettingsUI implements ChangeListener {
 
     public JComponent getUI() {
 	return panel;
+    }
+
+    public JComponent getPreview() {
+	return preview;
+    }
+
+    public void isMaster(boolean master) {
+
     }
 }

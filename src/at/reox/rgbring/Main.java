@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
 
 public class Main {
 
@@ -24,13 +23,14 @@ public class Main {
 	final Main m = new Main();
 	m.initLEDs();
 	m.init();
-	SwingUtilities.invokeLater(new Runnable() {
-	    @Override
-	    public void run() {
+	if (args.length > 0) {
+	    if (args[0].equals("--tray")) {
 		m.setTray();
-
 	    }
-	});
+	} else {
+	    m.window.setVisible(true);
+	    m.window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	}
 
     }
 
@@ -44,16 +44,16 @@ public class Main {
 	// Channel 16 -> 31: GRB
 
 	leds = new ArrayList<LED>();
-	leds.add(new LED(one, 2, 1, 3));
-	leds.add(new LED(one, 5, 4, 6));
-	leds.add(new LED(one, 8, 7, 9));
-	leds.add(new LED(one, 11, 10, 12));
-	leds.add(new LED(one, 14, 13, 15));
-	leds.add(new LED(two, 2, 1, 3));
-	leds.add(new LED(two, 5, 4, 6));
-	leds.add(new LED(two, 8, 7, 9));
-	leds.add(new LED(two, 11, 10, 12));
-	leds.add(new LED(two, 14, 13, 15));
+	leds.add(new LED(one, 3, 2, 1));
+	leds.add(new LED(one, 6, 5, 4));
+	leds.add(new LED(one, 9, 8, 7));
+	leds.add(new LED(one, 12, 11, 10));
+	leds.add(new LED(one, 15, 14, 13));
+	leds.add(new LED(two, 3, 2, 1));
+	leds.add(new LED(two, 6, 5, 4));
+	leds.add(new LED(two, 9, 8, 7));
+	leds.add(new LED(two, 12, 11, 10));
+	leds.add(new LED(two, 15, 14, 13));
     }
 
     private boolean isVisible = false;
@@ -78,14 +78,16 @@ public class Main {
 	}
 
 	SettingsUI master = new SettingsUI();
-	LEDService masterS = new LEDServiceImpl();
-	masterS.setLED(new LED(new Controller(0, 0), 0, 0, 0)); // pseudo service
+	LEDService masterS = new MasterLEDService();
+	serv.setMasterService(masterS);
+	masterS.setLED(null); // pseudo service
 	master.setLEDService(masterS);
 
 	sui.setLEDFrames(master, frames);
-	sui.pack();
+	// sui.pack();
 	serv.startWorkerThread();
 	window = sui;
+	window.pack();
     }
 
     private void setTray() {

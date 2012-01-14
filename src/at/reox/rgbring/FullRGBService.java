@@ -9,4 +9,8 @@ public interface FullRGBService {
     void setCommunicator(Communicator com);
 
     void startWorkerThread();
+
+    void setMasterService(LEDService master);
+
+    void setMasterControl(boolean on);
 }

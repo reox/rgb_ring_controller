@@ -12,44 +12,46 @@ public class FullRGBServiceImpl implements FullRGBService {
 	leds = new TreeMap<Integer, LEDService>();
     }
 
+    private byte[] lastSend = new byte[64];
+
     private void tick() {
 	byte[] data = new byte[64];
 	Arrays.fill(data, (byte) 0x0);
 
 	for (LEDService l : leds.values()) {
-	    int seq = l.getLED().getControlSequence();
-	    // System.out.println(seq + "" + l.getLEDState().toString());
-	    byte[] temp = convertRGBData(l.getLEDState(), l.getLED());
-	    for (int i = seq * 2; i < (seq * 2) + 6; i++) {
-		data[i] = temp[i - (seq * 2)];
+	    RGB rgb = l.getLEDState();
+	    LED led = l.getLED();
+
+	    int contr = led.getController().getNumber() << 4;
+
+	    int red = ((contr | led.getRed()) * 2);
+	    int green = ((contr | led.getGreen()) * 2);
+	    int blue = ((contr | led.getBlue()) * 2);
+
+	    int rc = rgb.red;
+	    int gc = rgb.green;
+	    int bc = rgb.blue;
+
+	    if (masterControl) {
+		rc = master.getLEDState().red;
+		gc = master.getLEDState().green;
+		bc = master.getLEDState().blue;
 	    }
+
+	    data[red] = (byte) (rc >> 8);
+	    data[red + 1] = (byte) (rc & 0xFF);
+
+	    data[green] = (byte) (gc >> 8);
+	    data[green + 1] = (byte) (gc & 0xFF);
+
+	    data[blue] = (byte) (bc >> 8);
+	    data[blue + 1] = (byte) (bc & 0xFF);
 	}
 	// System.out.println(Arrays.toString(data));
-	com.sendData(data);
-    }
-
-    private byte[] convertRGBData(RGB rgb, LED led) {
-	byte r_hi = (byte) (rgb.red >> 8);
-	byte r_lo = (byte) (rgb.red & 0xFF);
-
-	byte g_hi = (byte) (rgb.green >> 8);
-	byte g_lo = (byte) (rgb.green & 0xFF);
-
-	byte b_hi = (byte) (rgb.blue >> 8);
-	byte b_lo = (byte) (rgb.blue & 0xFF);
-
-	byte[] data = new byte[6];
-
-	data[(led.getRed() % 3) * 2] = r_hi;
-	data[((led.getRed() % 3) * 2) + 1] = r_lo;
-
-	data[(led.getGreen() % 3) * 2] = g_hi;
-	data[((led.getGreen() % 3) * 2) + 1] = g_lo;
-
-	data[(led.getBlue() % 3) * 2] = b_hi;
-	data[((led.getBlue() % 3) * 2) + 1] = b_lo;
-
-	return data;
+	if (!Arrays.equals(lastSend, data)) {
+	    lastSend = data;
+	    com.sendData(data);
+	}
     }
 
     @Override
@@ -82,5 +84,18 @@ public class FullRGBServiceImpl implements FullRGBService {
 	    }
 	});
 	t.start();
+    }
+
+    @Override
+    public void setMasterService(LEDService master) {
+	this.master = master;
+    }
+
+    private boolean masterControl = false;
+    private LEDService master;
+
+    @Override
+    public void setMasterControl(boolean on) {
+	masterControl = on;
     }
 }
