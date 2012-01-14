@@ -28,9 +28,10 @@ public class FullRGBServiceImpl implements FullRGBService {
 	    int green = ((contr | led.getGreen()) * 2);
 	    int blue = ((contr | led.getBlue()) * 2);
 
-	    int rc = rgb.red;
-	    int gc = rgb.green;
-	    int bc = rgb.blue;
+	    // These Values are 12Bit, we need 16!
+	    int rc = rgb.red << 4;
+	    int gc = rgb.green << 4;
+	    int bc = rgb.blue << 4;
 
 	    if (masterControl) {
 		rc = master.getLEDState().red;

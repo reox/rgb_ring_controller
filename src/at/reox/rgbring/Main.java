@@ -30,6 +30,7 @@ public class Main {
 	} else {
 	    m.window.setVisible(true);
 	    m.window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	    m.window.setLocation(400, 100);
 	}
 
     }
