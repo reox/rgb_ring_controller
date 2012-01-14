@@ -26,6 +26,7 @@ public class SettingsUI implements ChangeListener {
     private LEDService rgb;
 
     private JPanel color;
+    private JCheckBox snap;
 
     private Color[] clickableColors = { new Color(100, 100, 100), new Color(200, 200, 200),
 	Color.black, Color.red, Color.blue, Color.green, Color.cyan, Color.magenta, Color.yellow };
@@ -45,40 +46,7 @@ public class SettingsUI implements ChangeListener {
 	greenl = new JLabel(startcolor + "");
 	bluel = new JLabel(startcolor + "");
 
-	final JCheckBox snap = new JCheckBox("Snap Sliders");
-
-	JPanel clickColors = new JPanel(new MigLayout());
-	for (final Color c : clickableColors) {
-	    JPanel tcolor = new JPanel();
-	    tcolor.setBackground(c);
-	    tcolor.addMouseListener(new MouseListener() {
-		@Override
-		public void mouseClicked(MouseEvent arg0) {
-		    snap.setSelected(false);
-		    snapmode = false;
-		    updateRGB(c);
-		}
-
-		@Override
-		public void mouseEntered(MouseEvent arg0) {
-		}
-
-		@Override
-		public void mouseExited(MouseEvent arg0) {
-		}
-
-		@Override
-		public void mousePressed(MouseEvent arg0) {
-		}
-
-		@Override
-		public void mouseReleased(MouseEvent arg0) {
-		}
-	    });
-	    clickColors.add(tcolor, "h 30!, w 30!");
-	}
-
-	// panel.add(clickColors, "span, wrap");
+	snap = new JCheckBox("Snap Sliders");
 
 	redl.setText("0x" + Integer.toHexString(startcolor));
 	greenl.setText("0x" + Integer.toHexString(startcolor));
@@ -142,7 +110,7 @@ public class SettingsUI implements ChangeListener {
 	int b = blue.getValue();
 
 	// The Color in Java is 8 Bit...
-	color.setBackground(new Color((r >> 4) % 255, (g >> 4) % 255, (b >> 4) % 255));
+	color.setBackground(new Color((r >> 4) % 256, (g >> 4) % 256, (b >> 4) % 256));
 
 	rgb.sendRGB(red.getValue(), green.getValue(), blue.getValue());
     }
@@ -193,5 +161,43 @@ public class SettingsUI implements ChangeListener {
 
     public LEDService getService() {
 	return rgb;
+    }
+
+    public void showPanel() {
+
+	JPanel clickColors = new JPanel(new MigLayout());
+	for (final Color c : clickableColors) {
+	    final JPanel tcolor = new JPanel();
+	    tcolor.setBackground(c);
+	    tcolor.addMouseListener(new MouseListener() {
+		@Override
+		public void mouseClicked(MouseEvent arg0) {
+		    if (tcolor.isEnabled()) {
+			snap.setSelected(false);
+			snapmode = false;
+			updateRGB(c);
+		    }
+		}
+
+		@Override
+		public void mouseEntered(MouseEvent arg0) {
+		}
+
+		@Override
+		public void mouseExited(MouseEvent arg0) {
+		}
+
+		@Override
+		public void mousePressed(MouseEvent arg0) {
+		}
+
+		@Override
+		public void mouseReleased(MouseEvent arg0) {
+		}
+	    });
+	    clickColors.add(tcolor, "h 30!, w 30!");
+	}
+	panel.add(clickColors, "span, wrap");
+
     }
 }

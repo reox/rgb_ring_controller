@@ -41,6 +41,7 @@ public class SettingsFrame extends JFrame implements CallBack {
 	this.uis = uis;
 	panel.add(new JLabel("Master Control"), "split 2");
 	final JCheckBox mOn = new JCheckBox("activate");
+	master.showPanel();
 	((MasterLEDService) (master.getService())).registerCallBack((CallBack) (this));
 
 	mOn.addActionListener(new ActionListener() {
@@ -87,9 +88,6 @@ public class SettingsFrame extends JFrame implements CallBack {
 	panel.add(circle, "grow, wrap, center");
 	panel.add(setter, "center");
     }
-
-    private int counter = 0;
-    private JLabel device;
 
     private void updateDevice() {
 	// if (service.isDeviceAvailable()) {
