@@ -183,7 +183,15 @@ public class SettingsUI implements ChangeListener {
 	return preview;
     }
 
-    public void isMaster(boolean master) {
+    public void setRGB(RGB data) {
+	red.setValue(data.red);
+	green.setValue(data.green);
+	blue.setValue(data.blue);
 
+	updateRGB();
+    }
+
+    public LEDService getService() {
+	return rgb;
     }
 }

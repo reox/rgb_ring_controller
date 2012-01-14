@@ -18,7 +18,7 @@ import javax.swing.JPanel;
 
 import net.miginfocom.swing.MigLayout;
 
-public class SettingsFrame extends JFrame {
+public class SettingsFrame extends JFrame implements CallBack {
 
     /**
      * 
@@ -26,6 +26,8 @@ public class SettingsFrame extends JFrame {
     private static final long serialVersionUID = -3891970602245864133L;
     private JPanel panel, circle, setter;
     private CardLayout led;
+
+    private List<SettingsUI> uis;
 
     SettingsFrame() {
 	circle = new JPanel(null);
@@ -36,9 +38,10 @@ public class SettingsFrame extends JFrame {
     }
 
     public void setLEDFrames(final SettingsUI master, final List<SettingsUI> uis) {
+	this.uis = uis;
 	panel.add(new JLabel("Master Control"), "split 2");
 	final JCheckBox mOn = new JCheckBox("activate");
-	master.isMaster(true);
+	((MasterLEDService) (master.getService())).registerCallBack((CallBack) (this));
 
 	mOn.addActionListener(new ActionListener() {
 	    @Override
@@ -118,4 +121,11 @@ public class SettingsFrame extends JFrame {
 	devLookup.start();
     }
 
+    @Override
+    public void callMe(RGB data) {
+
+	for (SettingsUI u : uis) {
+	    u.setRGB(data);
+	}
+    }
 }
